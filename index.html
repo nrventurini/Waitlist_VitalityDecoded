@@ -18,37 +18,27 @@
   </form>
 
   <script>
-    document.getElementById("formulario").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
-      const json = {};
+  document.getElementById("formulario").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
 
-      data.forEach((value, key) => {
-        if (json[key]) {
-          if (!Array.isArray(json[key])) json[key] = [json[key]];
-          json[key].push(value);
-        } else {
-          json[key] = value;
-        }
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec";
+
+    try {
+      const response = await fetch(scriptURL, {
+        method: "POST",
+        body: formData, // ✅ usamos FormData directamente
       });
 
-      const scriptURL = "https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec";
+      const text = await response.text(); // no se espera JSON
+      alert("✅ Respuesta del servidor:\n" + text);
+      window.location.href = "gracias.html";
+    } catch (err) {
+      alert("❌ Error en envío:\n" + err.message);
+    }
+  });
+</script>
 
-      try {
-        const response = await fetch(scriptURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(json),
-        });
-
-        const text = await response.text();
-        alert("✅ Respuesta del servidor:\n" + text);
-        window.location.href = "gracias.html";
-      } catch (err) {
-        alert("❌ Error en envío:\n" + err.message);
-      }
-    });
-  </script>
 </body>
 </html>
