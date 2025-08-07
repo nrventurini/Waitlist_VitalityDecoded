@@ -4,61 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vitality Decoded - Lista de Espera</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    form { max-width: 400px; margin: auto; }
-    label { display: block; margin-top: 10px; }
-    .checkbox-group { margin-bottom: 10px; }
-    button { background-color: #007bff; color: white; padding: 10px; border: none; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-  </style>
 </head>
 <body>
-  <h1>Vitality Decoded – Lista de Espera</h1>
+  <h1>Únete a la lista de espera</h1>
   <form id="formulario">
-    <label>Nombre: <input type="text" name="Nombre" required /></label>
-    <label>Email: <input type="email" name="Email" required /></label>
-    <label>Teléfono: <input type="text" name="Teléfono" /></label>
-    <div class="checkbox-group">
-      <label>Servicios:</label>
-      <label><input type="checkbox" name="Servicios[]" value="Vitality Decoded" checked /> Vitality Decoded</label>
-      <label><input type="checkbox" name="Servicios[]" value="Asesoramiento" /> Asesoramiento</label>
-    </div>
-    <label><input type="checkbox" name="RGPD" value="on" required /> Acepto la política de privacidad</label>
-    <br />
-    <button type="submit">Unirme a la lista</button>
+    <label>Nombre: <input type="text" name="Nombre" required /></label><br />
+    <label>Email: <input type="email" name="Email" required /></label><br />
+    <label>Teléfono: <input type="text" name="Teléfono" /></label><br />
+    <label><input type="checkbox" name="Servicios" value="Vitality Decoded" checked /> Vitality Decoded</label><br />
+    <label><input type="checkbox" name="Servicios" value="Asesoramiento" /> Asesoramiento</label><br />
+    <label><input type="checkbox" name="RGPD" required /> Acepto la política de privacidad</label><br />
+    <button type="submit">Enviar</button>
   </form>
 
   <script>
-    document.getElementById("formulario").addEventListener("submit", function(e) {
+    document.getElementById("formulario").addEventListener("submit", async function (e) {
       e.preventDefault();
       const form = e.target;
       const data = new FormData(form);
-      const params = new URLSearchParams();
+      const json = {};
 
-      for (const [key, value] of data.entries()) {
-        if (key.endsWith("[]")) {
-          params.append(key.slice(0, -2), value);
+      data.forEach((value, key) => {
+        if (json[key]) {
+          if (!Array.isArray(json[key])) json[key] = [json[key]];
+          json[key].push(value);
         } else {
-          params.append(key, value);
+          json[key] = value;
         }
-      }
+      });
 
       const scriptURL = "https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec";
 
-      fetch(scriptURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-      })
-      .then(res => res.text())
-      .then(text => {
-        alert("Respuesta del servidor:\n" + text);
+      try {
+        const response = await fetch(scriptURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(json),
+        });
+
+        const text = await response.text();
+        alert("✅ Respuesta del servidor:\n" + text);
         window.location.href = "gracias.html";
-      })
-      .catch(err => {
-        alert("❌ Error en el envío: " + err.message);
-      });
+      } catch (err) {
+        alert("❌ Error en envío:\n" + err.message);
+      }
     });
   </script>
 </body>
