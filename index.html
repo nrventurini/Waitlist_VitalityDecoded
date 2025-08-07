@@ -36,16 +36,25 @@
       e.preventDefault();
 
       const form = e.target;
-      const data = new FormData(form);
+      const formData = new FormData(form);
+      const entries = [];
 
-      const encoded = new URLSearchParams();
-      for (const pair of data.entries()) {
-        encoded.append(pair[0], pair[1]);
+      for (const [key, value] of formData.entries()) {
+        if (key.endsWith("[]")) {
+          entries.push(`${encodeURIComponent(key.slice(0, -2))}=${encodeURIComponent(value)}`);
+        } else {
+          entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+        }
       }
+
+      const body = entries.join("&");
 
       fetch("https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec", {
         method: "POST",
-        body: encoded,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: body,
       })
         .then((response) => response.text())
         .then((text) => {
@@ -53,7 +62,7 @@
           window.location.href = "gracias.html";
         })
         .catch((error) => {
-          alert("Error al enviar: " + error);
+          alert("Error al enviar: " + error.message);
         });
     });
   </script>
