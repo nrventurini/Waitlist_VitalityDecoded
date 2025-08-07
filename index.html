@@ -14,56 +14,51 @@
   </style>
 </head>
 <body>
-  <h1>Vitality Decoded - Lista de Espera</h1>
+  <h1>Vitality Decoded – Lista de Espera</h1>
   <form id="formulario">
     <label>Nombre: <input type="text" name="Nombre" required /></label>
     <label>Email: <input type="email" name="Email" required /></label>
-    <label>Teléfono: <input type="text" name="Teléfono" required /></label>
-
+    <label>Teléfono: <input type="text" name="Teléfono" /></label>
     <div class="checkbox-group">
       <label>Servicios:</label>
-      <label><input type="checkbox" name="Servicios[]" value="Vitality Decoded" /> Vitality Decoded</label>
+      <label><input type="checkbox" name="Servicios[]" value="Vitality Decoded" checked /> Vitality Decoded</label>
       <label><input type="checkbox" name="Servicios[]" value="Asesoramiento" /> Asesoramiento</label>
     </div>
-
-    <label><input type="checkbox" name="RGPD" required /> Acepto la política de privacidad</label>
+    <label><input type="checkbox" name="RGPD" value="on" required /> Acepto la política de privacidad</label>
     <br />
     <button type="submit">Unirme a la lista</button>
   </form>
 
   <script>
-    document.getElementById("formulario").addEventListener("submit", function (e) {
+    document.getElementById("formulario").addEventListener("submit", function(e) {
       e.preventDefault();
-
       const form = e.target;
-      const formData = new FormData(form);
-      const entries = [];
+      const data = new FormData(form);
+      const params = new URLSearchParams();
 
-      for (const [key, value] of formData.entries()) {
+      for (const [key, value] of data.entries()) {
         if (key.endsWith("[]")) {
-          entries.push(`${encodeURIComponent(key.slice(0, -2))}=${encodeURIComponent(value)}`);
+          params.append(key.slice(0, -2), value);
         } else {
-          entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+          params.append(key, value);
         }
       }
 
-      const body = entries.join("&");
+      const scriptURL = "https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec";
 
-      fetch("https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec", {
+      fetch(scriptURL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: body,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString()
       })
-        .then((response) => response.text())
-        .then((text) => {
-          alert("Respuesta del servidor:\n" + text);
-          window.location.href = "gracias.html";
-        })
-        .catch((error) => {
-          alert("Error al enviar: " + error.message);
-        });
+      .then(res => res.text())
+      .then(text => {
+        alert("Respuesta del servidor:\n" + text);
+        window.location.href = "gracias.html";
+      })
+      .catch(err => {
+        alert("❌ Error en el envío: " + err.message);
+      });
     });
   </script>
 </body>
