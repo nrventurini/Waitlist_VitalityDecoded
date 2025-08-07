@@ -107,7 +107,8 @@
     <p class="subtitle">
       ¡Asegura tu ejemplar con <strong>30% de descuento</strong> y además recibirás un adelanto exclusivo del libro!
     </p>
-    <form action="https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec" method="POST" target="hidden_iframe" onsubmit="return validarFormulario()">
+    <form id="formulario" action="https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec" method="POST" onsubmit="return enviarDatos(event)">
+
       <input type="hidden" name="Servicios[]" value="Waitlist Vitality Decoded">
 
       <label for="nombre">Nombre completo</label>
@@ -125,7 +126,8 @@
 
       <div class="captcha">
         <label id="captchaPregunta">Pregunta de seguridad...</label>
-        <input type="text" id="captchaRespuesta" placeholder="?" required style="width: 80px;">
+        <input type="text" id="captchaRespuesta" name="captcha" placeholder="?" required style="width: 80px;">
+
       </div>
 
       <input type="text" name="campoTrampa" id="campoTrampa" style="display:none;">
@@ -141,7 +143,7 @@
       Tus datos están protegidos bajo la normativa RGPD. Nunca compartiremos tu información.
     </p>
 
-    
+
     <script>var submitted = false;</script>
 
 
@@ -168,25 +170,51 @@
     });
 
     
-    function validarFormulario() {
-      const respuesta = document.getElementById("captchaRespuesta").value.trim();
-      const trampa = document.getElementById("campoTrampa").value.trim();
-      if (trampa !== "") {
-        alert("Detección de bot. Formulario bloqueado.");
-        return false;
-      }
-      if (respuesta !== captcha.respuesta) {
-        alert("Respuesta incorrecta en la pregunta de seguridad.");
-        return false;
-      }
+    function enviarDatos(event) {
+    event.preventDefault();
 
-      submitted = true;
-      document.getElementById("btnText").textContent = "Enviando...";
-      document.getElementById("spinner").style.display = "inline-block";
-      document.getElementById("enviarBtn").disabled = true;
-
-      return true;
+    const respuesta = document.getElementById("captchaRespuesta").value.trim();
+    const trampa = document.getElementById("campoTrampa").value.trim();
+    if (trampa !== "") {
+      alert("Detección de bot. Formulario bloqueado.");
+      return false;
     }
+    if (respuesta !== captcha.respuesta) {
+      alert("Respuesta incorrecta en la pregunta de seguridad.");
+      return false;
+    }
+
+    submitted = true;
+    document.getElementById("btnText").textContent = "Enviando...";
+    document.getElementById("spinner").style.display = "inline-block";
+    document.getElementById("enviarBtn").disabled = true;
+
+    const form = document.getElementById("formulario");
+    const data = new URLSearchParams(new FormData(form));
+
+    fetch(form.action, {
+      method: "POST",
+      body: data,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        window.location = "https://nrventurini.github.io/Agradecimiento_reservas/";
+      } else {
+        alert("Error al enviar el formulario. Intenta de nuevo.");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Error al enviar el formulario. Intenta de nuevo.");
+    });
+
+    return false;
+  }
   </script>
+
+  
 </body>
 </html>
