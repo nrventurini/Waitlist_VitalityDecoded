@@ -1,44 +1,217 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vitality Decoded - Lista de Espera</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Vitality Decoded - Lista de Espera Exclusiva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #0e0e1a;
+      color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    }
+    h1 {
+      font-size: 2em;
+      color: #f5b841;
+      text-align: center;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 1.2em;
+      margin: 10px 0 30px;
+      color: #ccc;
+    }
+    .cover {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 12px;
+      background: #2e2e48;
+      color: white;
+    }
+    input::placeholder {
+      color: #bbb;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #f5b841;
+      color: #000;
+      border: none;
+      font-size: 1.1em;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e0a000;
+    }
+    .legal {
+      font-size: 0.85em;
+      color: #aaa;
+      margin-top: 10px;
+    }
+    .captcha, .rgpd {
+      margin-top: 12px;
+    }
+    .gift {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .gift a {
+      color: #00ffd5;
+      text-decoration: underline;
+    }
+    .loader {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <h1>Únete a la lista de espera</h1>
-  <form id="formulario">
-    <label>Nombre: <input type="text" name="Nombre" required /></label><br />
-    <label>Email: <input type="email" name="Email" required /></label><br />
-    <label>Teléfono: <input type="text" name="Teléfono" /></label><br />
-    <label><input type="checkbox" name="Servicios" value="Vitality Decoded" checked /> Vitality Decoded</label><br />
-    <label><input type="checkbox" name="Servicios" value="Asesoramiento" /> Asesoramiento</label><br />
-    <label><input type="checkbox" name="RGPD" required /> Acepto la política de privacidad</label><br />
-    <button type="submit">Enviar</button>
-  </form>
+  <div class="container">
+    <img src="Portada.png" alt="Portada Vitality Decoded" class="cover">
+    <h1>Vitality Decoded</h1>
+    <p class="subtitle">
+      ¡Asegura tu ejemplar con <strong>30% de descuento</strong> y además recibirás un adelanto exclusivo del libro!
+    </p>
+    <form id="formulario" onsubmit="return enviarDatos(event)">
+
+
+      <input type="hidden" name="Servicios[]" value="Waitlist Vitality Decoded">
+
+      <label for="nombre">Nombre completo</label>
+      <input type="text" name="Nombre" id="nombre" placeholder="Tu nombre" required>
+
+      <label for="email">Correo electrónico</label>
+      <input type="email" name="Email" id="email" placeholder="tu_mejor@email.com" required>
+
+      <label for="telefono">Teléfono (opcional)</label>
+      <input type="text" name="Teléfono" id="telefono" placeholder="Ej: +34 600 000 000">
+
+      <div class="rgpd">
+        <label><input type="checkbox" name="RGPD" required> Acepto la <a href="https://nrventurini.github.io/Pol-tica_privacidad/" target="_blank" rel="noopener noreferrer">política de privacidad</a>.</label>
+      </div>
+
+      <div class="captcha">
+        <label id="captchaPregunta">Pregunta de seguridad...</label>
+        <input type="text" id="captchaRespuesta" name="captcha" placeholder="?" required style="width: 80px;">
+
+      </div>
+
+      <input type="text" name="campoTrampa" id="campoTrampa" style="display:none;">
+
+      <button type="submit" id="enviarBtn">
+        <span id="btnText">Unirme a la lista</span>
+        <span id="spinner" style="display: none; margin-left: 10px;" class="loader"></span>
+      </button>
+    </form>
+
+   
+    <p class="legal">
+      Tus datos están protegidos bajo la normativa RGPD. Nunca compartiremos tu información.
+    </p>
+
+
+  </div>
 
   <script>
-  document.getElementById("formulario").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
+    let captcha = { pregunta: "¿Cuánto es 2 + 2?", respuesta: "4" };
+    const preguntas = [
+      { pregunta: "¿Cuánto es 3 + 4?", respuesta: "7" },
+      { pregunta: "¿Cuánto es 10 - 2?", respuesta: "8" },
+      { pregunta: "¿Cuánto es 5 + 1?", respuesta: "6" },
+      { pregunta: "¿Cuánto es 3 x 4?", respuesta: "12" },
+      { pregunta: "¿Cuánto es 6 - 3?", respuesta: "3" },
+      { pregunta: "¿Cuánto es 4 + 1?", respuesta: "5" },
+    ];
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwVlqfq2oGmjn2zloMpdYj8iGq5m-c4QdNHGDu3BRbYgB0YJ9GVpI62Sw9btOD14TIR/exec";
+    window.addEventListener("DOMContentLoaded", () => {
+      captcha = preguntas[Math.floor(Math.random() * preguntas.length)];
+      document.getElementById("captchaPregunta").textContent = captcha.pregunta;
+    });
 
-    try {
-      const response = await fetch(scriptURL, {
-        method: "POST",
-        body: formData, // ✅ usamos FormData directamente
-      });
+    
+    function enviarDatos(event) {
+    event.preventDefault();
 
-      const text = await response.text(); // no se espera JSON
-      alert("✅ Respuesta del servidor:\n" + text);
-      window.location.href = "gracias.html";
-    } catch (err) {
-      alert("❌ Error en envío:\n" + err.message);
+    const respuesta = document.getElementById("captchaRespuesta").value.trim();
+    const trampa = document.getElementById("campoTrampa").value.trim();
+    if (trampa !== "") {
+      alert("Detección de bot. Formulario bloqueado.");
+      return false;
     }
-  });
-</script>
+    if (respuesta !== captcha.respuesta) {
+      alert("Respuesta incorrecta en la pregunta de seguridad.");
+      return false;
+    }
 
+    submitted = true;
+    document.getElementById("btnText").textContent = "Enviando...";
+    document.getElementById("spinner").style.display = "inline-block";
+    document.getElementById("enviarBtn").disabled = true;
+
+    const form = document.getElementById("formulario");
+    const data = new URLSearchParams(new FormData(form));
+
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxJoxZa9PKIB42fuIIJ7LgldsNEPRx4D-h7m5cyqybr0Lq93RtV9gqULdIi_ozfpWp0/exec";
+
+fetch(scriptURL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+  body: new URLSearchParams(data),
+})
+  .then((response) => response.text())
+  .then((text) => {
+    
+    window.location.href = "https://nrventurini.github.io/Agradecimiento_reservas/";
+  })
+  .catch((error) => {
+    alert("❌ Error en envío: " + error.message);
+    document.getElementById("btnText").textContent = "Unirme a la lista";
+    document.getElementById("spinner").style.display = "none";
+    document.getElementById("enviarBtn").disabled = false;
+  });
+
+
+    return false;
+  }
+  </script>
+
+  
 </body>
 </html>
